@@ -1,0 +1,14 @@
+local TeleportService = game:GetService("TeleportService")
+local StarterGui = game:GetService("StarterGui")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local gameId = 1234567890 --Replace this placeholder with the actual game ID
+
+TeleportService:Teleport(gameId, player)
+
+StarterGui:SetCore("SendNotification", {
+    Title = "Teleporting",
+    Text = "Teleporting to Game ID: "..gameId,
+    Duration = 5
+})
