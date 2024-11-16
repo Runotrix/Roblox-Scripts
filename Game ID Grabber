@@ -1,0 +1,12 @@
+local StarterGui = game:GetService("StarterGui")
+
+local function notifyGameId()
+    local gameId = game.PlaceId
+    StarterGui:SetCore("SendNotification", {
+        Title = "Current Game ID",
+        Text = "Game ID: "..gameId,
+        Duration = 20
+    })
+end
+
+notifyGameId()
