@@ -1,14 +1,140 @@
 local TeleportService = game:GetService("TeleportService")
-local StarterGui = game:GetService("StarterGui")
 local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+
+local function createGui(player)
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "TeleportGui"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = player:WaitForChild("PlayerGui")
+
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0.35, 0, 0.35, 0) -- Covers 35% of the screen
+    frame.Position = UDim2.new(0.325, 0, 0.325, 0) -- Centers the frame
+    frame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    frame.BackgroundTransparency = 1 -- Start fully transparent
+    frame.Parent = screenGui
+
+    local frameCorner = Instance.new("UICorner")
+    frameCorner.CornerRadius = UDim.new(0, 10) -- Set the corner radius
+    frameCorner.Parent = frame
+
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, 0, 0.3, 0)
+    titleLabel.Position = UDim2.new(0, 0, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = "Game Teleporter (Created By Runotrix)"
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 20 -- Smaller text size
+    titleLabel.Parent = frame
+
+    local inputBox = Instance.new("TextBox")
+    inputBox.Size = UDim2.new(1, 0, 0.3, 0)
+    inputBox.Position = UDim2.new(0, 0, 0.3, 0)
+    inputBox.BackgroundTransparency = 1 -- Make the background transparent
+    inputBox.PlaceholderText = "Put your Game ID Here..." -- Set the placeholder text
+    inputBox.Text = "" -- Ensure the placeholder text is shown initially
+    inputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+    inputBox.Font = Enum.Font.Gotham
+    inputBox.TextSize = 18 -- Smaller text size
+    inputBox.Parent = frame
+
+    local inputBoxCorner = Instance.new("UICorner")
+    inputBoxCorner.CornerRadius = UDim.new(0, 10) -- Set the corner radius
+    inputBoxCorner.Parent = inputBox
+
+    local teleportButton = Instance.new("TextButton")
+    teleportButton.Size = UDim2.new(1, 0, 0.3, 0)
+    teleportButton.Position = UDim2.new(0, 0, 0.6, 0)
+    teleportButton.BackgroundTransparency = 1 -- Make the background transparent
+    teleportButton.Text = "Teleport"
+    teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    teleportButton.Font = Enum.Font.GothamBold
+    teleportButton.TextSize = 18 -- Smaller text size
+    teleportButton.Parent = frame
+
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 10) -- Set the corner radius
+    buttonCorner.Parent = teleportButton
+
+    -- Tween for fade-in effect
+    local tweenInfo = TweenInfo.new(2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+    local fadeInTween = TweenService:Create(frame, tweenInfo, {BackgroundTransparency = 0})
+    local fadeInTextLabelTween = TweenService:Create(titleLabel, tweenInfo, {TextTransparency = 0})
+    local fadeInInputBoxTween = TweenService:Create(inputBox, tweenInfo, {TextTransparency = 0})
+    local fadeInButtonTween = TweenService:Create(teleportButton, tweenInfo, {TextTransparency = 0})
+
+    fadeInTween:Play()
+    fadeInTextLabelTween:Play()
+    fadeInInputBoxTween:Play()
+    fadeInButtonTween:Play()
+
+    local isGuiVisible = true
+
+    teleportButton.MouseButton1Click:Connect(function()
+        local inputGameId = tonumber(inputBox.Text)
+        if not inputGameId then
+            inputBox.Text = "" -- Clear the TextBox if not a valid number
+            StarterGui:SetCore("SendNotification", {
+                Title = "Error",
+                Text = "Please enter a valid Game ID.",
+                Duration = 5
+            })
+        else
+            TeleportService:Teleport(inputGameId, player)
+            StarterGui:SetCore("SendNotification", {
+                Title = "Teleporting",
+                Text = "Teleporting to Game ID: "..inputGameId,
+                Duration = 5
+            })
+        end
+    end)
+
+    UserInputService.InputBegan:Connect(function(input, gameProcessedEvent)
+        if input.KeyCode == Enum.KeyCode.T and not gameProcessedEvent then
+            if isGuiVisible then
+                local fadeOutTween = TweenService:Create(frame, tweenInfo, {BackgroundTransparency = 1})
+                local fadeOutTextLabelTween = TweenService:Create(titleLabel, tweenInfo, {TextTransparency = 1})
+                local fadeOutInputBoxTween = TweenService:Create(inputBox, tweenInfo, {TextTransparency = 1})
+                local fadeOutButtonTween = TweenService:Create(teleportButton, tweenInfo, {TextTransparency = 1})
+
+                fadeOutTween:Play()
+                fadeOutTextLabelTween:Play()
+                fadeOutInputBoxTween:Play()
+                fadeOutButtonTween:Play()
+
+                fadeOutTween.Completed:Connect(function()
+                    frame.Visible = false
+                end)
+            else
+                frame.Visible = true
+                fadeInTween:Play()
+                fadeInTextLabelTween:Play()
+                fadeInInputBoxTween:Play()
+                fadeInButtonTween:Play()
+            end
+            isGuiVisible = not isGuiVisible
+        end
+    end)
+end
+
+Players.PlayerAdded:Connect(function(player)
+    player.CharacterAdded:Connect(function()
+        wait(1) -- Small delay to ensure PlayerGui is available
+        if not player:WaitForChild("PlayerGui"):FindFirstChild("TeleportGui") then
+            createGui(player)
+        end
+    end)
+end)
+
+-- Create the GUI for the LocalPlayer when the script is first run
 local player = Players.LocalPlayer
-
-local gameId = 1234567890 --Replace this placeholder with the actual game ID
-
-TeleportService:Teleport(gameId, player)
-
-StarterGui:SetCore("SendNotification", {
-    Title = "Teleporting",
-    Text = "Teleporting to Game ID: "..gameId,
-    Duration = 5
-})
+if player.Character then
+    createGui(player)
+else
+    player.CharacterAdded:Wait()
+    createGui(player)
+end
